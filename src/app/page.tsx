@@ -1,5 +1,8 @@
-export default function Home() {
+"use client";
+import UsersTable from "./components/UsersTable";
+
+export default function UsersPage(){
   return (
-    <h1>CRUD APP</h1>
-  );
+    <UsersTable />
+  )
 }

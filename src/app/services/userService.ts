@@ -12,13 +12,17 @@ export async function createUser(data: Omit<User, 'id'>){
 export async function getAllUsers(){
     await sequelize.authenticate();
     User.initModel(sequelize);
-    return await User.findAll();
+    return await User.findAll({
+        attributes: {exclude: ['password']},
+    });
 }
 
 export async function getUserById(id: number){
     await sequelize.authenticate();
     User.initModel(sequelize);
-    return await User.findByPk(id);
+    return await User.findByPk(id, {
+        attributes: {exclude: ['password']},
+    });
 }
 
 export async function updateUser(id: number, updates: Partial<User>){

@@ -1,4 +1,4 @@
-import {Sequelize, DataTypes, Model, CreationOptional} from '@sequelize/core';
+import {Sequelize, DataTypes, Model, CreationOptional} from 'sequelize';
 
 interface UserAttributes {
     id: CreationOptional<number>;

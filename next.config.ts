@@ -1,8 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  reactCompiler: true,
+  turbopack: {},
+  experimental: {
+    serverComponentsExternalPackages: ["pg", "pg-hstore", "sequelize"],
+  },
 };
 
 export default nextConfig;

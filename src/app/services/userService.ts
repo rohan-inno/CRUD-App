@@ -1,11 +1,14 @@
 import { User } from '../models/User';
 import sequelize from './sequelize';
+import bcrypt from 'bcryptjs';
 
 export async function createUser(data: Omit<User, 'id'>){
     await sequelize.authenticate();
     User.initModel(sequelize);
 
-    const user = await User.create(data as any);
+    const hash = await bcrypt.hash(data.password, 10);
+
+    const user = await User.create({...data, password: hash} as any);
     return user;
 }
 
@@ -30,6 +33,9 @@ export async function updateUser(id: number, updates: Partial<User>){
     User.initModel(sequelize);
     const user = await User.findByPk(id);
     if(user){
+        if(updates.password){
+            updates.password = await bcrypt.hash(updates.password, 10);
+        }
         return await user.update(updates);
     }
     return user;

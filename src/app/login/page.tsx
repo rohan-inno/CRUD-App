@@ -30,7 +30,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-md p-8">
         <h1 className="text-2xl font-semibold text-center text-gray-800 mb-6">
-          Welcome Back 👋
+          Secure Login Portal
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -71,7 +71,7 @@ export default function LoginPage() {
           </button>
 
           <p className="text-center text-sm text-gray-600 mt-4">
-            Don’t have an account?{" "}
+            Do not have an account?{" "}
             <Link
               href="/"
               className="text-blue-500 hover:text-blue-600 font-medium"

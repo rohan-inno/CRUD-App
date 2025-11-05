@@ -9,14 +9,14 @@ export async function POST(req:NextRequest) {
         const {name, phone, email, address, password} = await req.json();
 
         if(!name || !phone || !email || !address || !password)
-            return NextResponse.json({error: "Missing required fields"})
+            return NextResponse.json({error: "Missing required fields"}, {status: 400})
 
         await sequelize.authenticate();
         User.initModel(sequelize);
 
         const existingUser = await User.findOne({where: {email}});
         if(existingUser)
-            return NextResponse.json({error: "User already exists."})
+            return NextResponse.json({error: "User already exists."}, {status: 409})
 
         const hash = await bcrypt.hash(password, 10);
 

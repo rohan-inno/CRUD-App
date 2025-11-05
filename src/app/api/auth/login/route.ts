@@ -8,25 +8,49 @@ export async function POST(req:NextRequest) {
     try {
         const {email, password} = await req.json();
 
-        if(!email || !password)
-            return NextResponse.json({error: "Enter email and password"});
+        if(!email || !password) {
+            return NextResponse.json({error: "Enter email and password"}, {status: 400});
+        }
 
-        await sequelize.authenticate();
+        try {
+            await sequelize.authenticate();
+        } catch (dbError: any) {
+            console.error('Database connection error:', dbError);
+            return NextResponse.json(
+                {error: "Database connection failed", details: dbError.message},
+                {status: 500}
+            );
+        }
+
         User.initModel(sequelize);
 
         const user = await User.findOne({where: {email}});
 
-        if(!user)
+        if(!user) {
             return NextResponse.json({error: "Invalid email or password."}, {status: 401});
+        }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
-        if(!isPasswordValid)
+        if(!isPasswordValid) {
             return NextResponse.json({error: "Invalid email or password."}, {status: 401});
+        }
         
-        const token = generateToken({id: user.id, email: user.email})
+        const token = generateToken({id: user.id, email: user.email});
 
-        return NextResponse.json({message: "Login successful!", token, user}, {status: 200});
+        return NextResponse.json({
+            message: "Login successful!",
+            token,
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name
+            }
+        }, {status: 200});
     } catch (error: any) {
-        return NextResponse.json({error: error.message}, {status: 501});
+        console.error('Login error:', error);
+        return NextResponse.json({
+            error: "An unexpected error occurred",
+            details: error.message
+        }, {status: 500});
     }
 }

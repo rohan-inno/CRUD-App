@@ -9,7 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@reduxjs/toolkit": "^2.10.0",
+    "@reduxjs/toolkit": "^2.10.1",
     "@sequelize/db2-ibmi": "^7.0.0-alpha.47",
     "@sequelize/mariadb": "^7.0.0-alpha.47",
     "@sequelize/mssql": "^7.0.0-alpha.47",
@@ -32,6 +32,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

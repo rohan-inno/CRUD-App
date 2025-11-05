@@ -17,7 +17,22 @@ export default function UsersTable(){
   //Fetch Users from users table (http://localhost:3000/api/users)
   async function fetchUsers(){
       try{
-        const res = await fetch('/api/users');
+        const token = localStorage.getItem("token");
+        if(!token){
+          alert("You must be logged in to access this page.")
+          return;
+        }
+        const res = await fetch('/api/users', {
+          headers: {
+            "Authorization": `Bearer ${token}`,
+          }
+        });
+
+        if(!res.ok){
+          const data = await res.json();
+          alert(data.error);
+          return;
+        }
         const data = await res.json();
         setUsers(data);
 
@@ -35,20 +50,28 @@ export default function UsersTable(){
   //Delete a User from users table
   async function handleDelete(id: number){
     try{
-        if(!confirm("Are you sure you want to delete this user?")){
-          return;
+      const token = localStorage.getItem("token");
+      if(!token){
+        alert("You must be logged in to access this page.")
+        return;
+      }
+      if(!confirm("Are you sure you want to delete this user?")){
+        return;
+      }
+      const res = await fetch(`/api/users/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`
         }
-        const res = await fetch(`/api/users/${id}`, {
-          method: "DELETE",
-        });
-        
-        if(res.ok) {
-            setUsers((prev) => prev.filter((user) => user.id !== id));
-            alert("User deleted successfully!");
-        } else{
-            const data = await res.json();
-            alert("Failed to delete user!");
-        }
+      });
+      
+      if(res.ok) {
+        setUsers((prev) => prev.filter((user) => user.id !== id));
+        alert("User deleted successfully!");
+      }else{
+        const data = await res.json();
+        alert("Failed to delete user!");
+      }
     } catch(error){
         console.error("Error deleting user: ", error);
         alert("An unexpected error occured!");
@@ -64,9 +87,16 @@ export default function UsersTable(){
   async function handleSaveEdit(){
     if(!editingUser) return;
 
+    const token = localStorage.getItem("token");
+    if(!token){
+      alert("You must be logged in to access this page.")
+      return;
+    }
+
     const res = await fetch(`/api/users/${editingUser.id}`, {
         method: 'PUT',
-        headers: {"Content-Type": "application/json"},
+        headers: {"Content-Type": "application/json",
+                  "Authorization": `Bearer ${token}`},
         body: JSON.stringify(editingUser),
     });
 

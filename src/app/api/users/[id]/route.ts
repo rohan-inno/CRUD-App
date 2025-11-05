@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserById, updateUser, deleteUser } from "@/app/services/userService";
-import { Context } from "vm";
+//import { Context } from "vm";
 
 export async function GET(req: NextRequest, context: {params: Promise<{id: string}>}){
     const { id } = await context.params;

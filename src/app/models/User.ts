@@ -1,4 +1,4 @@
-import {Sequelize, DataTypes, Model, CreationOptional} from 'sequelize';
+import {Sequelize, DataTypes, Model, CreationOptional, InferAttributes, InferCreationAttributes} from 'sequelize';
 
 interface UserAttributes {
     id: CreationOptional<number>;
@@ -9,7 +9,7 @@ interface UserAttributes {
     password: string;
 }
 
-export class User extends Model<UserAttributes> implements UserAttributes {
+export class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> implements UserAttributes {
     declare id: CreationOptional<number>;   
     declare name: string;
     declare phone: string;

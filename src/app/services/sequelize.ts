@@ -1,10 +1,12 @@
 import { Sequelize } from 'sequelize';
+import pg from 'pg';
 import dotenv from 'dotenv';
 
 dotenv.config({path: ".env.local"});
 
 const sequelize = new Sequelize(process.env.DATABASE_URL as string, {
   dialect: 'postgres',
+  dialectModule: pg,
   dialectOptions: {
     ssl: {
       require: true,

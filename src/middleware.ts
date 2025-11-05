@@ -12,14 +12,15 @@ export function middleware(req: NextRequest){
         }
 
         const token = authHeader.split(" ")[1];
-        const decoded = verifyToken(token);
+        try {
+            const decoded = verifyToken(token);
+            if (!decoded) throw new Error("Invalid token");
 
-        if(!decoded){
-            return NextResponse.json({error: "Invalid or expired token."}, {status: 401});
+            return NextResponse.next();
+            } catch (err) {
+            return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
+            }
         }
-
-        return NextResponse.next();
-    }
 
     return NextResponse.next();
 }

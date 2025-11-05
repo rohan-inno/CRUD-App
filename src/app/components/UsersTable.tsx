@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../store/store";
 import { fetchUsers, selectUsers } from "../slices/usersSlice";
+import { logout } from "../slices/authSlice";
 
 export interface User {
   id: number;
@@ -20,11 +21,27 @@ export default function UsersTable() {
 
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
-  // Fetch all users on mount
   useEffect(() => {
-    if (token) {
-      dispatch(fetchUsers(token));
-    }
+    const fetchData = async () => {
+      if (token) {
+        const result = await dispatch(fetchUsers(token));
+
+        if (
+          fetchUsers.rejected.match(result) &&
+          (result.payload === "Invalid or expired token" ||
+            result.error.message?.includes("401"))
+        ) {
+          alert("Session expired. Please log in again.");
+          localStorage.removeItem("token");
+          dispatch(logout());
+          window.location.href = "/login";
+        }
+      } else {
+        window.location.href = "/login";
+      }
+    };
+
+    fetchData();
   }, [dispatch, token]);
 
   // Delete a user
@@ -42,9 +59,17 @@ export default function UsersTable() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      if (res.status === 401) {
+        alert("Session expired. Please log in again.");
+        localStorage.removeItem("token");
+        dispatch(logout());
+        window.location.href = "/login";
+        return;
+      }
+
       if (res.ok) {
         alert("User deleted successfully!");
-        dispatch(fetchUsers(token)); // refresh list
+        dispatch(fetchUsers(token));
       } else {
         const data = await res.json();
         alert(data.error || "Failed to delete user.");
@@ -68,6 +93,14 @@ export default function UsersTable() {
       body: JSON.stringify(editingUser),
     });
 
+    if (res.status === 401) {
+      alert("Session expired. Please log in again.");
+      localStorage.removeItem("token");
+      dispatch(logout());
+      window.location.href = "/login";
+      return;
+    }
+
     if (res.ok) {
       alert("User updated successfully!");
       setEditingUser(null);
@@ -77,78 +110,129 @@ export default function UsersTable() {
     }
   }
 
-  if (loading) return <div>Loading users...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (loading) return <div className="text-center mt-10 text-gray-600">Loading users...</div>;
+  if (error) return <div className="text-center mt-10 text-red-500">Error: {error}</div>;
 
   return (
-    <div>
-      <h1>Users</h1>
+    <div className="min-h-screen bg-gray-50 p-10">
+      <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-md p-8">
+        <h1 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
+          Users
+        </h1>
 
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th><th>Name</th><th>Phone</th><th>Email</th><th>Address</th><th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.length > 0 ? (
-            users.map((user) => (
-              <tr key={user.id}>
-                <td>{user.id}</td>
-                <td>{user.name}</td>
-                <td>{user.phone}</td>
-                <td>{user.email}</td>
-                <td>{user.address}</td>
-                <td>
-                  <button onClick={() => setEditingUser(user)}>Edit</button>
-                  <button onClick={() => handleDelete(user.id)}>Delete</button>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-left text-gray-700 border-collapse">
+            <thead>
+              <tr className="bg-gray-100 border-b">
+                <th className="p-3">ID</th>
+                <th className="p-3">Name</th>
+                <th className="p-3">Phone</th>
+                <th className="p-3">Email</th>
+                <th className="p-3">Address</th>
+                <th className="p-3 text-center">Actions</th>
               </tr>
-            ))
-          ) : (
-            <tr><td colSpan={6}>No users found.</td></tr>
-          )}
-        </tbody>
-      </table>
-
-      {editingUser && (
-        <div>
-          <h2>Edit User</h2>
-          <input
-            type="text"
-            value={editingUser.name}
-            onChange={(e) =>
-              setEditingUser({ ...editingUser, name: e.target.value })
-            }
-          />
-          <input
-            type="text"
-            value={editingUser.phone}
-            onChange={(e) =>
-              setEditingUser({ ...editingUser, phone: e.target.value })
-            }
-          />
-          <input
-            type="email"
-            value={editingUser.email}
-            onChange={(e) =>
-              setEditingUser({ ...editingUser, email: e.target.value })
-            }
-          />
-          <input
-            type="text"
-            value={editingUser.address}
-            onChange={(e) =>
-              setEditingUser({ ...editingUser, address: e.target.value })
-            }
-          />
-
-          <div>
-            <button onClick={() => setEditingUser(null)}>Cancel</button>
-            <button onClick={handleSaveEdit}>Save</button>
-          </div>
+            </thead>
+            <tbody>
+              {users.length > 0 ? (
+                users.map((user) => (
+                  <tr
+                    key={user.id}
+                    className="border-b hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="p-3">{user.id}</td>
+                    <td className="p-3">{user.name}</td>
+                    <td className="p-3">{user.phone}</td>
+                    <td className="p-3">{user.email}</td>
+                    <td className="p-3">{user.address}</td>
+                    <td className="p-3 flex gap-2 justify-center">
+                      <button
+                        onClick={() => setEditingUser(user)}
+                        className="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(user.id)}
+                        className="px-3 py-1 text-sm bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6} className="text-center py-6 text-gray-500">
+                    No users found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
-      )}
+
+        {editingUser && (
+          <div className="mt-10 bg-gray-100 p-6 rounded-xl shadow-inner">
+            <h2 className="text-lg font-medium mb-4 text-gray-700">
+              Edit User
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <input
+                type="text"
+                value={editingUser.name}
+                onChange={(e) =>
+                  setEditingUser({ ...editingUser, name: e.target.value })
+                }
+                placeholder="Name"
+                className="p-2 border rounded-md w-full"
+              />
+              <input
+                type="text"
+                value={editingUser.phone}
+                onChange={(e) =>
+                  setEditingUser({ ...editingUser, phone: e.target.value })
+                }
+                placeholder="Phone"
+                className="p-2 border rounded-md w-full"
+              />
+              <input
+                type="email"
+                value={editingUser.email}
+                onChange={(e) =>
+                  setEditingUser({ ...editingUser, email: e.target.value })
+                }
+                placeholder="Email"
+                className="p-2 border rounded-md w-full"
+              />
+              <input
+                type="text"
+                value={editingUser.address}
+                onChange={(e) =>
+                  setEditingUser({ ...editingUser, address: e.target.value })
+                }
+                placeholder="Address"
+                className="p-2 border rounded-md w-full"
+              />
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setEditingUser(null)}
+                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-md transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveEdit}
+                className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md transition-colors"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

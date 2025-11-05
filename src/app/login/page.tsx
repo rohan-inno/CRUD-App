@@ -25,40 +25,60 @@ export default function LoginPage() {
   }
 
   return (
-    <div>
-      <form onSubmit={handleSubmit}>
-        <h1>Login</h1>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-md p-8">
+        <h1 className="text-2xl font-semibold text-center text-gray-800 mb-6">
+          Welcome Back 👋
+        </h1>
 
-        <input
-          type="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={(e) =>
-            setFormData({ ...formData, email: e.target.value })
-          }
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={formData.password}
-          onChange={(e) =>
-            setFormData({ ...formData, password: e.target.value })
-          }
-        />
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <input
+              type="email"
+              placeholder="Email"
+              value={formData.email}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+          </div>
 
-        {error && <p style={{ color: "red" }}>{error}</p>}
+          <div>
+            <input
+              type="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={(e) =>
+                setFormData({ ...formData, password: e.target.value })
+              }
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+          </div>
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Logging in..." : "Login"}
-        </button>
+          {error && (
+            <p className="text-sm text-red-500 text-center">{error}</p>
+          )}
 
-        <p>
-          Don’t have an account?{" "}
-          <a href="/register" className="text-blue-500 hover:underline">
-            Register
-          </a>
-        </p>
-      </form>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 rounded-lg transition duration-200 disabled:opacity-70"
+          >
+            {loading ? "Logging in..." : "Login"}
+          </button>
+
+          <p className="text-center text-sm text-gray-600 mt-4">
+            Don’t have an account?{" "}
+            <a
+              href="/register"
+              className="text-blue-500 hover:text-blue-600 font-medium"
+            >
+              Register
+            </a>
+          </p>
+        </form>
+      </div>
     </div>
   );
 }

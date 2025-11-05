@@ -27,6 +27,7 @@
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "react-redux": "^9.2.0",
+    "react-toastify": "^11.0.5",
     "redux": "^5.0.1",
     "sequelize": "^6.37.7",
     "ts-node": "^10.9.2"

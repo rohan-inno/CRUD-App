@@ -50,6 +50,15 @@ export class User extends Model<InferAttributes<User>, InferCreationAttributes<U
                 sequelize,
                 tableName: 'users',
                 modelName: 'User',
+                indexes: [
+                    {
+                        unique: true,
+                        fields: ['email']
+                    },
+                    {
+                        fields: ['name']
+                    }
+                ]
             }
         );
     }

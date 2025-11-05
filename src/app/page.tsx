@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "./store/store";
 import { registerUser } from "./slices/authSlice";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { toast } from 'react-toastify';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -54,8 +56,10 @@ export default function RegisterPage() {
     const result = await dispatch(registerUser(formData));
 
     if (registerUser.fulfilled.match(result)) {
-      alert("Registration successful!");
+      toast.success("Registration successful!");
       router.push("/login");
+    } else {
+      toast.error(result.payload as string || "Registration failed");
     }
   }
 
@@ -110,12 +114,12 @@ export default function RegisterPage() {
 
         <p className="text-center text-gray-600 mt-4 text-sm">
           Already have an account?{" "}
-          <a
+          <Link
             href="/login"
             className="text-blue-500 hover:underline font-medium"
           >
             Login
-          </a>
+          </Link>
         </p>
       </form>
     </div>

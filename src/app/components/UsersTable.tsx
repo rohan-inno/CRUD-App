@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../store/store";
 import { fetchUsers, selectUsers } from "../slices/usersSlice";
 import { logout } from "../slices/authSlice";
+import { toast } from 'react-toastify';
 
 export interface User {
   id: number;
@@ -23,7 +24,12 @@ export default function UsersTable() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (token) {
+      if (!token) {
+        window.location.href = "/login";
+        return;
+      }
+
+      if (users.length === 0) {
         const result = await dispatch(fetchUsers(token));
 
         if (
@@ -31,13 +37,11 @@ export default function UsersTable() {
           (result.payload === "Invalid or expired token" ||
             result.error.message?.includes("401"))
         ) {
-          alert("Session expired. Please log in again.");
+          toast.error("Session expired. Please log in again.");
           localStorage.removeItem("token");
           dispatch(logout());
           window.location.href = "/login";
         }
-      } else {
-        window.location.href = "/login";
       }
     };
 
@@ -47,7 +51,7 @@ export default function UsersTable() {
   // Delete a user
   async function handleDelete(id: number) {
     if (!token) {
-      alert("You must be logged in to access this page.");
+      toast.error("You must be logged in to access this page.");
       return;
     }
 
@@ -60,7 +64,7 @@ export default function UsersTable() {
       });
 
       if (res.status === 401) {
-        alert("Session expired. Please log in again.");
+        toast.error("Session expired. Please log in again.");
         localStorage.removeItem("token");
         dispatch(logout());
         window.location.href = "/login";
@@ -68,11 +72,11 @@ export default function UsersTable() {
       }
 
       if (res.ok) {
-        alert("User deleted successfully!");
+        toast.success("User deleted successfully!");
         dispatch(fetchUsers(token));
       } else {
         const data = await res.json();
-        alert(data.error || "Failed to delete user.");
+        toast.error(data.error || "Failed to delete user.");
       }
     } catch (err) {
       console.error("Error deleting user:", err);
@@ -94,7 +98,7 @@ export default function UsersTable() {
     });
 
     if (res.status === 401) {
-      alert("Session expired. Please log in again.");
+      toast.error("Session expired. Please log in again.");
       localStorage.removeItem("token");
       dispatch(logout());
       window.location.href = "/login";
@@ -102,11 +106,11 @@ export default function UsersTable() {
     }
 
     if (res.ok) {
-      alert("User updated successfully!");
+      toast.success("User updated successfully!");
       setEditingUser(null);
       dispatch(fetchUsers(token));
     } else {
-      alert("Failed to update user.");
+      toast.error("Failed to update user.");
     }
   }
 

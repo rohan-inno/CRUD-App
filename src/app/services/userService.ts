@@ -1,36 +1,32 @@
 import { User } from '../models/User';
-import sequelize from './sequelize';
+import { initDatabase } from './db';
 import bcrypt from 'bcryptjs';
 
 export async function createUser(data: Omit<User, 'id'>){
-    await sequelize.authenticate();
-    User.initModel(sequelize);
-
+    await initDatabase();
     const hash = await bcrypt.hash(data.password, 10);
-
     const user = await User.create({...data, password: hash} as any);
     return user;
 }
 
 export async function getAllUsers(){
-    await sequelize.authenticate();
-    User.initModel(sequelize);
+    await initDatabase();
     return await User.findAll({
-        attributes: {exclude: ['password']},
+        attributes: ['id', 'name', 'phone', 'email', 'address'],
+        raw: true,
+        nest: false
     });
 }
 
 export async function getUserById(id: number){
-    await sequelize.authenticate();
-    User.initModel(sequelize);
+    await initDatabase();
     return await User.findByPk(id, {
         attributes: {exclude: ['password']},
     });
 }
 
 export async function updateUser(id: number, updates: Partial<User>){
-    await sequelize.authenticate();
-    User.initModel(sequelize);
+    await initDatabase();
     const user = await User.findByPk(id);
     if(user){
         if(updates.password){
@@ -42,8 +38,7 @@ export async function updateUser(id: number, updates: Partial<User>){
 }
 
 export async function deleteUser(id: number){
-    await sequelize.authenticate();
-    User.initModel(sequelize);
+    await initDatabase();
     const user = await User.findByPk(id);
     if(user){
         await user.destroy();

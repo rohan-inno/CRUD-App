@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../store/store";
 import { loginUser } from "../slices/authSlice";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { toast } from 'react-toastify';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -70,12 +72,12 @@ export default function LoginPage() {
 
           <p className="text-center text-sm text-gray-600 mt-4">
             Don’t have an account?{" "}
-            <a
-              href="/register"
+            <Link
+              href="/"
               className="text-blue-500 hover:text-blue-600 font-medium"
             >
               Register
-            </a>
+            </Link>
           </p>
         </form>
       </div>

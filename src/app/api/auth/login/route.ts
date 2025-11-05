@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from 'bcryptjs'
 import { User } from "@/app/models/User";
-import sequelize from "@/app/services/sequelize";
+import { initDatabase } from "@/app/services/db";
 import { generateToken } from "@/app/utils/jwt";
 
 export async function POST(req:NextRequest) {
@@ -14,7 +14,7 @@ export async function POST(req:NextRequest) {
         }
 
         try {
-            await sequelize.authenticate();
+            await initDatabase();
         } catch (dbError: any) {
             console.error('Database connection error:', dbError);
             return NextResponse.json(
@@ -22,8 +22,6 @@ export async function POST(req:NextRequest) {
                 {status: 500}
             );
         }
-
-        User.initModel(sequelize);
 
         const user = await User.findOne({where: {email}});
 

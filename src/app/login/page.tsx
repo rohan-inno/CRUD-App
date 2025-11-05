@@ -1,61 +1,64 @@
 "use client";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAppDispatch, useAppSelector } from "../store/store";
+import { loginUser } from "../slices/authSlice";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-    const router = useRouter();
-    const [formData, setFormData] = useState({
-        email: "",
-        password: "",
-    });
-    const [error, setError] = useState("");
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+  const { loading, error, token } = useAppSelector((state) => state.auth);
 
-    async function handleSubmit(e: React.FormEvent) {
-        e.preventDefault();
-        setError("");
+  const [formData, setFormData] = useState({ email: "", password: "" });
 
-        const res = await fetch("/api/auth/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(formData),
-        });
+  useEffect(() => {
+    localStorage.removeItem("token");
+  }, []);
 
-        const data = await res.json();
-        if (res.ok) {
-            localStorage.setItem("token", data.token);
-            alert("Login successful!");
-            router.push("/users");
-        } else {
-            setError(data.error || "Invalid credentials");
-        }
-    }
+  useEffect(() => {
+    if (token) router.push("/users");
+  }, [token, router]);
 
-    return (
-        <div className="">
-            <form onSubmit={handleSubmit} className="">
-                <h1 className="">Login</h1>
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    await dispatch(loginUser(formData));
+  }
 
-                {["email", "password"].map((field) => (
-                    <input
-                        key={field}
-                        type={field === "password" ? "password" : "text"}
-                        placeholder={field[0].toUpperCase() + field.slice(1)}
-                        value={(formData as any)[field]}
-                        onChange={(e) => setFormData({ ...formData, [field]: e.target.value })}
-                        required
-                        className=""
-                    />
-                ))}
+  return (
+    <div>
+      <form onSubmit={handleSubmit}>
+        <h1>Login</h1>
 
-                {error && <p className="">{error}</p>}
+        <input
+          type="email"
+          placeholder="Email"
+          value={formData.email}
+          onChange={(e) =>
+            setFormData({ ...formData, email: e.target.value })
+          }
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={formData.password}
+          onChange={(e) =>
+            setFormData({ ...formData, password: e.target.value })
+          }
+        />
 
-                <button type="submit" className=""> Login </button>
+        {error && <p style={{ color: "red" }}>{error}</p>}
 
-                <p className="">Don't have an account?{" "}
-                    <a href="/" className="text-blue-500 hover:underline">Register</a>
-                </p>
-            </form>
-        </div>
-    );
+        <button type="submit" disabled={loading}>
+          {loading ? "Logging in..." : "Login"}
+        </button>
+
+        <p>
+          Don’t have an account?{" "}
+          <a href="/register" className="text-blue-500 hover:underline">
+            Register
+          </a>
+        </p>
+      </form>
+    </div>
+  );
 }

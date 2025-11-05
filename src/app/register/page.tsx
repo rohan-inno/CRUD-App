@@ -1,61 +1,59 @@
 "use client";
 
 import { useState } from "react";
+import { useAppDispatch, useAppSelector } from "../store/store";
+import { registerUser } from "../slices/authSlice";
 import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
-    const router = useRouter();
-    const [formData, setFormData] = useState({
-        name: "",
-        phone: "",
-        email: "",
-        address: "",
-        password: "",
-    });
-    const [error, setError] = useState("");
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+  const {loading, error} = useAppSelector((state) => state.auth)
 
-    async function handleSubmit(e: React.FormEvent) {
-        e.preventDefault();
-        setError("");
+  const [formData, setFormData] = useState({
+      name: "",
+      phone: "",
+      email: "",
+      address: "",
+      password: "",
+  });
 
-        const res = await fetch("/api/auth/register", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(formData),
-        });
+  async function handleSubmit(e: React.FormEvent) {
+      e.preventDefault();
 
-        const data = await res.json();
-        if (res.ok) {
-            alert("Registration successful! Please log in.");
-            router.push("/login");
-        } else {
-            setError(data.error || "Something went wrong");
-        }
+      const result = await dispatch(registerUser(formData));
+
+    if (registerUser.fulfilled.match(result)) {
+      alert("Registration successful!");
+      router.push("/login");
     }
+  }
+
+
   return (
-    <div className="">
-        <form onSubmit={handleSubmit} className="">
-        <h1 className="">Register</h1>
+    <div>
+      <form onSubmit={handleSubmit}>
+        <h1>Register</h1>
 
         {["name", "phone", "email", "address", "password"].map((field) => (
-            <input
-                key={field}
-                type={field === "password" ? "password" : "text"}
-                placeholder={field[0].toUpperCase() + field.slice(1)}
-                value={(formData as any)[field]}
-                onChange={(e) =>
-                    setFormData({ ...formData, [field]: e.target.value })
-                }
-                required
-                className=""
-            />
+          <input
+            key={field}
+            type={field === "password" ? "password" : "text"}
+            placeholder={field}
+            value={(formData as any)[field]}
+            onChange={(e) =>
+              setFormData({ ...formData, [field]: e.target.value })
+            }
+            required
+          />
         ))}
 
-        {error && <p className="">{error}</p>}
+        {error && <p style={{ color: "red" }}>{error}</p>}
+        <button type="submit" disabled={loading}>
+          {loading ? "Registering..." : "Register"}
+        </button>
 
-        <button type="submit" className=""> Register </button>
-
-        <p className="">
+        <p>
           Already have an account?{" "}
           <a href="/login" className="text-blue-500 hover:underline">
             Login

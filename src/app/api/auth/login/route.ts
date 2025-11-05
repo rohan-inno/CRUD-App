@@ -6,6 +6,7 @@ import { generateToken } from "@/app/utils/jwt";
 
 export async function POST(req:NextRequest) {
     try {
+        //a
         const {email, password} = await req.json();
 
         if(!email || !password) {

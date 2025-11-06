@@ -56,6 +56,7 @@ export default function AddUserForm({ onClose }: AddUserFormProps) {
 
       if (res.ok) {
         toast.success("User added successfully!");
+        //await sendInvite(form.email, form.name.split(" ")[0], form.name.split(" ").slice(1).join(" "));
         setForm({ name: "", phone: "", email: "", address: "", password: "" });
         dispatch(fetchUsers(token));
         onClose();

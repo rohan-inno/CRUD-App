@@ -16,6 +16,8 @@
     "@sequelize/mysql": "^7.0.0-alpha.47",
     "@sequelize/snowflake": "^7.0.0-alpha.47",
     "@sequelize/sqlite3": "^7.0.0-alpha.47",
+    "@workos-inc/authkit-nextjs": "^2.11.0",
+    "@workos-inc/node": "^7.72.2",
     "axios": "^1.13.2",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.2.3",
@@ -31,6 +33,7 @@
     "redux": "^5.0.1",
     "sequelize": "^6.37.7",
     "ts-node": "^10.9.2",
+    "types": "^0.1.1",
     "yup": "^1.7.1"
   },
   "devDependencies": {

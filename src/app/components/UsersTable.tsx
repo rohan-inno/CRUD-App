@@ -7,6 +7,7 @@ import { logout } from "../slices/authSlice";
 import { toast } from "react-toastify";
 import ConfirmModal from "./ConfirmModal";
 import AddUserForm from "./AddUserForm";
+import InviteUserForm from "./InviteUserForm";
 
 export interface User {
   id: number;
@@ -15,6 +16,26 @@ export interface User {
   email: string;
   address: string;
 }
+
+// export async function sendInvite(email: string){
+//   try {
+//     const res = await fetch("/api/invite", {
+//       method: 'POST',
+//       headers: {"Content-Type": "application/json"},
+//       body: JSON.stringify({email})
+//     });
+
+//     const data = await res.json();
+//     if(res.ok){
+//       toast.success("Invite sent successfully!")
+//     } else {
+//       toast.error(`Error sending invite: ${data.error || "Unknown error"}`);
+//     }
+//   } catch (error) {
+//     console.error("Error sending invite", error);
+//     toast.error("Error sending invite");
+//   }
+// }
 
 export default function UsersTable() {
   const dispatch = useAppDispatch();
@@ -144,6 +165,10 @@ export default function UsersTable() {
     <div className="min-h-screen bg-gray-50 p-10">
       <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-md p-8">
         <div className="flex justify-between items-center mb-6">
+          <div className="p-6">
+            <h1 className="text-2xl font-semibold mb-4">Send Invitation</h1>
+            <InviteUserForm />
+          </div>
           <h1 className="text-2xl font-semibold text-gray-800">Users</h1>
           <button
             onClick={() => setIsAddModalOpen(true)}
@@ -190,6 +215,12 @@ export default function UsersTable() {
                       >
                         Delete
                       </button>
+                      {/* <button
+                        onClick={() => sendInvite(user.email)}
+                        className="px-3 py-1 text-sm bg-green-400 hover:bg-green-600 text-white rounded-md transition-colors"
+                      >
+                        Send Invite
+                      </button> */}
                     </td>
                   </tr>
                 ))

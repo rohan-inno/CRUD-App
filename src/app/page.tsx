@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from 'react-toastify';
 import { useAppDispatch, useAppSelector } from "./store/store";
 import { registerUser } from "./slices/authSlice";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { toast } from 'react-toastify';
+import { registerSchema } from "./schemas/registerSchema";
+import { ValidationError } from "yup";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -21,37 +23,34 @@ export default function RegisterPage() {
   });
 
   const [validationError, setValidationError] = useState("");
+  const [passwordRequirements, setPasswordRequirements] = useState({
+    minLength: false,
+    upperCase: false,
+    number: false,
+    specialChar: false,
+  })
 
-  function validateForm() {
-    // Check for empty fields
-    for (const key in formData) {
-      if ((formData as any)[key].trim() === "") {
-        setValidationError(`Please fill out the ${key} field.`);
-        return false;
+  async function validateForm() {
+    try {
+      await registerSchema.validate(formData, {abortEarly: true});
+      setValidationError("");
+      return true;
+
+    } catch (error) {
+      if(error instanceof ValidationError){
+        setValidationError(error.message);
+      } else {
+        setValidationError("An unexpected validation occured.");
       }
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      setValidationError("Please enter a valid email address.");
       return false;
     }
-
-    // Minimum password length
-    if (formData.password.length < 6) {
-      setValidationError("Password must be at least 6 characters long.");
-      return false;
-    }
-
-    setValidationError("");
-    return true;
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!validateForm()) return;
+    const isValid = await validateForm();
+    if (!isValid) return;
 
     const result = await dispatch(registerUser(formData));
 
@@ -60,6 +59,15 @@ export default function RegisterPage() {
       router.push("/login");
     } else {
       toast.error(result.payload as string || "Registration failed");
+    }
+  }
+
+  const handleBlur = async (field: string) => {
+    try{
+      await registerSchema.validateAt(field, formData);
+      setValidationError("");
+    } catch (error) {
+      if (error instanceof ValidationError) setValidationError(error.message);
     }
   }
 
@@ -80,12 +88,38 @@ export default function RegisterPage() {
                 type={field === "password" ? "password" : "text"}
                 placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
                 value={(formData as any)[field]}
-                onChange={(e) =>
-                  setFormData({ ...formData, [field]: e.target.value })
-                }
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setFormData({ ...formData, [field]: e.target.value });
+                  if(field === "password") {
+                    setPasswordRequirements({
+                      minLength: value.length >= 6,
+                      upperCase: /[A-Z]/.test(value),
+                      number: /[0-9]/.test(value),
+                      specialChar: /[@$!%*?&]/.test(value)
+                    });
+                  }
+                }}
+                onBlur={() => handleBlur(field)}
                 required
                 className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
               />
+              {field === "password" && formData.password.length > 0 && (
+                <ul className="text-sm mt-2 space-y-1">
+                  <li className={passwordRequirements.minLength ? "text-green-600" : "text-gray-600"}>
+                    • At least 6 characters
+                  </li>
+                  <li className={passwordRequirements.upperCase ? "text-green-600" : "text-gray-600"}>
+                    • One uppercase letter
+                  </li>
+                  <li className={passwordRequirements.number ? "text-green-600" : "text-gray-600"}>
+                    • One number
+                  </li>
+                  <li className={passwordRequirements.specialChar ? "text-green-600" : "text-gray-600"}>
+                    • One special character (@, $, !, %, *, ?, &)
+                  </li>
+                </ul>
+              )}
             </div>
           ))}
         </div>

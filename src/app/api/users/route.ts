@@ -7,6 +7,7 @@ export async function GET(req: Request){
         return NextResponse.json(users, {status: 200});
     
     } catch(error: any){
+        console.error("Error fetching users", error);
         return NextResponse.json({error: error.message}, {status: 500});
     }
 }
@@ -15,7 +16,9 @@ export async function POST(req: Request){
     try{
         const data = await req.json();
         const user = await createUser(data);
-        return NextResponse.json(user, {status: 201});
+        
+        const {password, ...safeUser} = user.get({plain: true});
+        return NextResponse.json(safeUser, {status: 201});
     } catch(error: any){
         return NextResponse.json({error: error.message}, {status: 501});
     }

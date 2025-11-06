@@ -16,7 +16,7 @@
     "@sequelize/mysql": "^7.0.0-alpha.47",
     "@sequelize/snowflake": "^7.0.0-alpha.47",
     "@sequelize/sqlite3": "^7.0.0-alpha.47",
-    "axios": "^1.13.1",
+    "axios": "^1.13.2",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.2.3",
     "jsonwebtoken": "^9.0.2",

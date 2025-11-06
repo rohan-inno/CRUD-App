@@ -4,6 +4,10 @@ import bcrypt from 'bcryptjs';
 
 export async function createUser(data: Omit<User, 'id'>){
     await initDatabase();
+
+    if(!data.password)
+        throw new Error("Password is required!");
+    
     const hash = await bcrypt.hash(data.password, 10);
     const user = await User.create({...data, password: hash} as any);
     return user;

@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../store/store";
 import { fetchUsers, selectUsers } from "../slices/usersSlice";
 import { logout } from "../slices/authSlice";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
+import ConfirmModal from "./ConfirmModal";
+import AddUserForm from "./AddUserForm";
 
 export interface User {
   id: number;
@@ -21,6 +23,25 @@ export default function UsersTable() {
   const token = useAppSelector((state) => state.auth.token);
 
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [deleteModalState, setDeleteModalState] = useState<{
+    isOpen: boolean;
+    userId: number | null;
+  }>({
+    isOpen: false,
+    userId: null,
+  });
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  function openDeleteModal(id: number) {
+    setDeleteModalState({ isOpen: true, userId: id });
+  }
+
+  function closeDeleteModal() {
+    if (!isDeleting) {
+      setDeleteModalState({ isOpen: false, userId: null });
+    }
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,16 +70,13 @@ export default function UsersTable() {
   }, [dispatch, token]);
 
   // Delete a user
-  async function handleDelete(id: number) {
-    if (!token) {
-      toast.error("You must be logged in to access this page.");
-      return;
-    }
+  async function handleConfirmDelete() {
+    if (!token || !deleteModalState.userId || isDeleting) return;
 
-    if (!confirm("Are you sure you want to delete this user?")) return;
+    setIsDeleting(true);
 
     try {
-      const res = await fetch(`/api/users/${id}`, {
+      const res = await fetch(`/api/users/${deleteModalState.userId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -80,7 +98,10 @@ export default function UsersTable() {
       }
     } catch (err) {
       console.error("Error deleting user:", err);
-      alert("Unexpected error occurred!");
+      toast.error("Unexpected error occurred!");
+    } finally {
+      setIsDeleting(false);
+      setDeleteModalState({ isOpen: false, userId: null });
     }
   }
 
@@ -114,15 +135,23 @@ export default function UsersTable() {
     }
   }
 
-  if (loading) return <div className="text-center mt-10 text-gray-600">Loading users...</div>;
-  if (error) return <div className="text-center mt-10 text-red-500">Error: {error}</div>;
+  if (loading)
+    return <div className="text-center mt-10 text-gray-600">Loading users...</div>;
+  if (error)
+    return <div className="text-center mt-10 text-red-500">Error: {error}</div>;
 
   return (
     <div className="min-h-screen bg-gray-50 p-10">
       <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-md p-8">
-        <h1 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
-          Users
-        </h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-semibold text-gray-800">Users</h1>
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="px-4 py-2 bg-white border hover:bg-blue-300 text-black rounded-md transition-colors"
+          >
+            + Add User
+          </button>
+        </div>
 
         <div className="overflow-x-auto">
           <table className="min-w-full text-left text-gray-700 border-collapse">
@@ -151,13 +180,13 @@ export default function UsersTable() {
                     <td className="p-3 flex gap-2 justify-center">
                       <button
                         onClick={() => setEditingUser(user)}
-                        className="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
+                        className="px-3 py-1 text-sm bg-white border hover:bg-blue-300 text-black rounded-md transition-colors"
                       >
                         Edit
                       </button>
                       <button
-                        onClick={() => handleDelete(user.id)}
-                        className="px-3 py-1 text-sm bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors"
+                        onClick={() => openDeleteModal(user.id)}
+                        className="px-3 py-1 text-sm bg-red-400 hover:bg-red-600 text-white rounded-md transition-colors"
                       >
                         Delete
                       </button>
@@ -177,9 +206,7 @@ export default function UsersTable() {
 
         {editingUser && (
           <div className="mt-10 bg-gray-100 p-6 rounded-xl shadow-inner">
-            <h2 className="text-lg font-medium mb-4 text-gray-700">
-              Edit User
-            </h2>
+            <h2 className="text-lg font-medium mb-4 text-gray-700">Edit User</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <input
@@ -237,6 +264,19 @@ export default function UsersTable() {
           </div>
         )}
       </div>
+
+      {isAddModalOpen && (
+        <AddUserForm onClose={() => setIsAddModalOpen(false)} />
+      )}
+
+      <ConfirmModal
+        isOpen={deleteModalState.isOpen}
+        onCancel={closeDeleteModal}
+        onConfirm={handleConfirmDelete}
+        isLoading={isDeleting}
+        title="Delete User"
+        message="Are you sure you want to delete this user? This action cannot be undone."
+      />
     </div>
   );
 }
